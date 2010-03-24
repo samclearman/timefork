@@ -1,0 +1,20 @@
+<script src="timefork.js"></script>
+
+<textarea style="width:300;height:200" id="textarea"></textarea>
+
+<script>
+(function(){
+
+  function init(){
+  
+    var textArea = document.getElementById( 'textarea' );
+    
+    var recordHistory = timeFork( 'textArea', textArea, 'keyup', 'value' )
+      .ul = document.getElementById( 'history' );
+
+  };  
+  
+  document.addEventListener( 'DOMContentLoaded', function(){ init(); }, false );
+
+})();
+</script>
