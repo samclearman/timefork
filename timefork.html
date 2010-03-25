@@ -5,13 +5,14 @@
 <script>
 (function(){
 
+  this.recordHistory;
+  
   function init(){
   
     var textArea = document.getElementById( 'textarea' );
     
-    var recordHistory = timeFork( 'textArea', textArea, 'keyup', 'value' )
-      .ul = document.getElementById( 'history' );
-
+    recordHistory = timeFork( 'textArea', textArea, 'keyup', 'value' );
+    
   };  
   
   document.addEventListener( 'DOMContentLoaded', function(){ init(); }, false );

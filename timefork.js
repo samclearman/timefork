@@ -14,7 +14,7 @@
     style   : {
                 TWO_PI  : Math.PI*2,
                 diam    : 5,
-                spacing : 2.5,
+                spacing : 4,
               }
   };
 
@@ -51,25 +51,27 @@
   };
   
   TimeFork.prototype.stateTree = new StateNode({
+      parent    : null,
       ancestor  : 0,
       branches  : [],
       eventTime : defs.lastTime,
       eventType : 'History began.',
       eventData : null,
-      eventData : undefined
+      propState : "",
   });
    
   TimeFork.prototype.filter = function( event ){
     clearTimeout( this.timeout );
     var origin = this;
     this.timeout = setTimeout( function(){ origin.recordState( event ); }, this.idleTime );
-  };  
+  };
   
   
   TimeFork.prototype.recordState = function( event ){
     var now = new Date().getTime();    
     
     this.pointInHistory = this.pointInHistory.branches[ 0 ] = new StateNode({
+      parent    : this.pointInHistory,
       ancestor  : this.lastTime,
       branches  : [],
       eventTime : now,
@@ -85,9 +87,8 @@
 
   TimeFork.prototype.makeCanvas = function(){
     var origin = this;
-    var mouseX=0, mouseY=0;
+
     var mouseMoved = function(){
-      console.log(mouseX, mouseY); 
     };
     
     with( this ){
@@ -98,18 +99,24 @@
       canvas.id = "history";
       body.appendChild(canvas);
       context = canvas.getContext('2d');
+      context.mouseX=0;
+      context.mouseY=0;
     }
     
     this.canvas.addEventListener('mousemove', function( e ){
       var scrollX = (window.scrollX !== null && typeof window.scrollX !== 'undefined') ? window.scrollX : window.pageXOffset;
       var scrollY = (window.scrollY !== null && typeof window.scrollY !== 'undefined') ? window.scrollY : window.pageYOffset;     
-      mouseX = e.clientX - origin.canvas.offsetLeft + scrollX;
-      mouseY = e.clientY - origin.canvas.offsetTop + scrollY;
+      origin.context.mouseX = e.clientX - origin.canvas.offsetLeft + scrollX;
+      origin.context.mouseY = e.clientY - origin.canvas.offsetTop + scrollY;
       mouseMoved();
     }, false);    
   };
   
-  
+  TimeFork.prototype.back = function(){
+    this.pointInHistory = this.pointInHistory.parent;
+    this.elem[ this.prop ] = this.pointInHistory.propState;
+    this.render();
+  };
     
   // Rendering time forks and state nodes
   TimeFork.prototype.render = function(){
@@ -126,6 +133,8 @@
         strokeStyle = "#fff";
         lineWidth   = 1;         
                  
+//        var x = style.diam, y = 
+                 
         context.save();      
           translate( style.diam, canvas.height/2 );
           renderBranch( stateTree );        
@@ -136,25 +145,39 @@
   };  
   
 
-  TimeFork.prototype.renderBranch = function( node ){     
+  TimeFork.prototype.renderBranch = function( node ){
     var style = this.style;
     for(var i in node.branches){
       with( this.context ){
+
+        if( this.pointInHistory.eventTime === node.branches[i].eventTime ){
+          strokeStyle = "#a00";
+        }else{
+          strokeStyle = "#fff";
+        }
+        lineWidth = 1;
+        console.log( mouseX, mouseY );
+        beginPath();
+          moveTo(0, 0);
+          lineTo(style.diam*2+style.spacing,0);
+        closePath();
+        stroke();
+        strokeStyle="#fff";
         if( this.pointInHistory.eventTime === node.branches[i].eventTime ){
           fillStyle = "#c00";
           lineWidth = 2;
         }else{
           fillStyle = "#0af";
           lineWidth = 1;
-        }
-        translate(style.diam*2+style.spacing,0);
+        }        
         beginPath();
           arc(0, 0, style.diam, 0, style.TWO_PI, true);
         closePath();
         fill();
         stroke();
+        translate(style.diam*2+style.spacing,0);     
       }
-      this.renderBranch( node.branches[i] );    
+      this.renderBranch( node.branches[i] );
     }
   };
   
