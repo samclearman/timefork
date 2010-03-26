@@ -70,7 +70,7 @@
   TimeFork.prototype.recordState = function( event ){
     var now = new Date().getTime();    
     
-    this.pointInHistory = this.pointInHistory.branches[ 0 ] = new StateNode({
+    this.pointInHistory = this.pointInHistory.branches[ this.pointInHistory.branches.length ] = new StateNode({
       parent    : this.pointInHistory,
       ancestor  : this.lastTime,
       branches  : [],
@@ -156,7 +156,9 @@
           strokeStyle = "#fff";
         }
         lineWidth = 1;
-        console.log( mouseX, mouseY );
+        
+        //console.log( mouseX, mouseY );
+        
         beginPath();
           moveTo(0, 0);
           lineTo(style.diam*2+style.spacing,0);
