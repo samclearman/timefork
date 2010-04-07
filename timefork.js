@@ -21,10 +21,32 @@
   // Statenode constructor
   var StateNode = function(props){
     for(var i in props){ this[i] = props[i]; }
+    
+    var ancestors = this.parent ? this.parent.ancestors().concat(this.parent) : [];
+    this.ancestors = function() { return ancestors };
     return this;
+      
   };
-
-
+  
+  StateNode.prototype.children = function() {
+    var children = this.branches;
+    for (var b in this.branches) {
+      children = children.concat(this.branches[b].children());
+    }
+    return children;
+  };
+  
+  StateNode.prototype.find = function(id) {
+    console.log("trying to find " + id);
+    var children = this.children();
+    for (var c in children) {
+      if (children[c].eventTime == id) {
+        return children[c];
+      }
+    }
+    return null;
+  };
+  
   // TimeFork Constructor
   var TimeFork = function( aName, elem, event, prop ){
   
@@ -80,11 +102,16 @@
       propState : this.elem[ this.prop ],
     });
     
-    console.log( this.pointInHistory );
     this.lastTime = now;
     this.render();
   };
-
+  
+  TimeFork.prototype.makeHtml = function(){
+    this.html = document.createElement('ul');
+    this.html.id = "history";
+    body.appendChild(this.html);
+  }
+  
   TimeFork.prototype.makeCanvas = function(){
     var origin = this;
 
@@ -112,14 +139,61 @@
     }, false);    
   };
   
-  TimeFork.prototype.back = function(){
-    this.pointInHistory = this.pointInHistory.parent;
-    this.elem[ this.prop ] = this.pointInHistory.propState;
+  TimeFork.prototype.go = function(point){
+    this.pointInHistory = point;
+    this.elem[ this.prop ] = point.propState;
     this.render();
+  }
+  
+  TimeFork.prototype.back = function(){
+    this.go(this.pointInHistory.parent);
   };
-    
+  
+  TimeFork.prototype.forward = function(fork){
+    fork = fork || this.pointInHistory.branches.length - 1;
+    if (fork < this.pointInHistory.branches.length){
+      this.go(this.pointInHistory.branches[fork]);
+    }
+  };    
+  
   // Rendering time forks and state nodes
   TimeFork.prototype.render = function(){
+    this.renderHtml();
+  };
+  
+  TimeFork.prototype.activeNodes = function(){
+    return this.pointInHistory.ancestors().concat(this.pointInHistory);
+  };
+  
+  TimeFork.prototype.renderHtml = function(){
+      
+    if(!this.html){
+      this.makeHtml();
+    }
+        
+    this.html.innerHTML = "";
+    this.html.appendChild(this.renderBranchHtml(this.stateTree));
+      
+    
+  };
+  
+  TimeFork.prototype.renderBranchHtml = function(root) {
+    var rendering = document.createElement('li');
+    if (this.activeNodes().indexOf(root) != -1) {
+      rendering.setAttribute("class", "active");
+    }
+    rendering.innerHTML = '<a href="#' + root.eventTime + '">' + (root.propState || "&nbsp") + '</a>';
+    
+    var branches = document.createElement('ul');
+    for (branch in root.branches) {
+      console.log(branch);
+      branches.appendChild(this.renderBranchHtml(root.branches[branch]));
+    }
+    rendering.appendChild(branches);
+    return rendering;
+  };
+  
+  TimeFork.prototype.renderCanvas = function(){
     with( this ){
       
       if(!canvas){
