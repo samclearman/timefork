@@ -1,17 +1,15 @@
-<style type="text/css">
-ul {list-style-type: none; display: inline-block; padding:0; margin:0;}
-#history {display: block;}
-
-li a {border-bottom: 1px solid black; text-decoration: none; display: inline-block;  padding: 0 5px 0 5px; color: blue;}
-li { border-left: 1px solid black;}
-ul > li:first-child { border-left: 0;}
-.active ~ li { border-left: 1px solid red; }
-.active > a { border-bottom: 1px solid red; }
-</style>
+<head>
 <script src="http://code.jquery.com/jquery-1.4.2.js"></script>
+
+
+<script src="deltatree.js"></script>
 <script src="timefork.js"></script>
 
-<textarea style="width:300;height:200" id="textarea"></textarea>
+<script>
+    $(function() {
+        $(".property").live("change", function(e){ console.log(e)});
+    })
+</script>
 
 <script>
 (function(){
@@ -20,9 +18,12 @@ ul > li:first-child { border-left: 0;}
   
   function init(){
   
-    var textArea = document.getElementById( 'textarea' );
+    var renderArea = document.getElementById( 'inner' );
     
-    myHistory = timeFork( 'textArea', textArea, 'keyup', 'value' );
+    myHistory = timeFork( 'Bada bing' );
+    myHistory.renderer = new ObjRenderer(renderArea, function(d){myHistory.recordState(d)});
+    myHistory.renderer.render({});
+    //myHistory.renderer.newProp();
     
     $("a").live('click', function(){
         var id = this.getAttribute("href").slice(1, this.getAttribute("href").length);
@@ -34,3 +35,44 @@ ul > li:first-child { border-left: 0;}
   
 })();
 </script>
+
+
+
+<style type="text/css">
+.undoable ul {list-style-type: none; padding: none; width: 300px;}
+.undoable ul:before {content: "{";}
+.undoable ul::after {content: "}";}
+.undoable li {margin-left: 50px; text-align: right;}
+.undoable .key { width: 80px; text-align: right;}
+.undoable .key:after {content: ":";}
+</style>
+
+<style type="text/css">
+#pane {display: block;}
+
+#pane ul {list-style-type: none; display: inline-block; padding:0; margin:0;}
+#pane li a {border-bottom: 1px solid black; text-decoration: none; display: inline-block;  padding: 0 5px 0 5px; color: blue;}
+#pane li { border-left: 1px solid black;}
+#pane ul > li:first-child { border-left: 0;}
+#pane .active ~ li { border-left: 1px solid red; }
+#pane .active > a { border-bottom: 1px solid red; }
+</style>
+</head>
+<body>
+    
+    
+    <style type="text/css">
+    .undoable ul {list-style-type: none; padding: none; width: 300px;}
+    .undoable ul:before {content: "{";}
+    .undoable ul::after {content: "}";}
+    .undoable li {margin-left: 50px; text-align: right;}
+    .undoable label {/* display: inline-block; width: 150px; */text-align: right;}
+    .undoable label:after {content: ":";}
+    </style>
+    <div class="undoable">
+        <div id="inner"></div>
+    </div>
+    
+    <div id="pane"></div>
+    
+</body>

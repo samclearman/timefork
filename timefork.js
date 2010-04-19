@@ -73,11 +73,12 @@
       $('<li class="property">').html('<label class="key">' + String(k) + '</label> <input class="value" name="' + String(k) + '"type="text" value="' + String(obj[k]) + '"></input>').appendTo($list);
     }
     $(this.elem).empty().append($list);
+    this.newProp();
   }
   
   ObjRenderer.prototype.decode = function() { 
     obj = {}
-    $(this.elem).find('.property').each(function(e) {
+    $(this.elem).find('.property:not(.new)').each(function(e) {
       $node = $(this);
       obj[$node.find("label").text()] = $node.find("input").val();
     });
