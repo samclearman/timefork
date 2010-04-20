@@ -3,7 +3,10 @@
 
 
 <script src="deltatree.js"></script>
+<script src="statenode.js"></script>
 <script src="timefork.js"></script>
+<script src="objeditor.js"></script>
+<script src="timeforkhtmlrenderer.js"></script>
 
 <script>
     $(function() {
@@ -17,18 +20,32 @@
   this.myHistory;
   
   function init(){
-  
-    var renderArea = document.getElementById( 'inner' );
+      
+    var myHistory = new timeFork('Bada bing', function() { $(myHistory).trigger("change"); });
     
-    myHistory = timeFork( 'Bada bing' );
-    myHistory.renderer = new ObjRenderer(renderArea, function(d){myHistory.recordState(d)});
-    myHistory.renderer.render({});
-    //myHistory.renderer.newProp();
+    var editor = new ObjEditor( document.getElementById('inner'), function(d){ $(editor).trigger("change") });
+    
+    var forkRenderer = new TimeForkHtmlRenderer(document.getElementById('pane'));
+
+    $(myHistory).bind("change", function(e){
+       editor.render(this.currentState());
+    });
+
+    $(myHistory).bind("change", function(e){
+       forkRenderer.render(this);
+    });
+    
+    $(editor).bind("change", function(e){
+        myHistory.recordState(this.decode());
+    });
     
     $("a").live('click', function(){
         var id = this.getAttribute("href").slice(1, this.getAttribute("href").length);
         myHistory.go(myHistory.stateTree.find(id));
     });
+    
+    editor.render({});
+    
   };  
   
   document.addEventListener( 'DOMContentLoaded', function(){ init(); }, false );
